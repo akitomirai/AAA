@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tiankong.mapper.QuestionMapper">
+
+    <insert id="add" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO question
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <!-- 强制必填字段（固定顺序） -->
+            course_id, chapter_id, paragraph_id, type, difficult, content, answer,
+
+            <!-- 动态可选字段 -->
+            <if test="analysis != null and analysis != ''">analysis,</if>
+            <if test="knowledgeId != null and !knowledgeId.isEmpty()">knowledge_id,</if>
+            <if test="chose != null and !chose.isEmpty()">chose,</if>
+        </trim>
+        VALUES
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <!-- 强制必填参数（与字段顺序严格一致） -->
+            #{courseId}, #{chapterId}, #{paragraphId}, #{type}, #{difficult}, #{content},
+            #{answer, typeHandler=com.tiankong.handler.JsonTypeHandler},
+
+            <!-- 动态参数（与字段条件完全同步） -->
+            <if test="analysis != null and analysis != ''">#{analysis},</if>
+            <if test="knowledgeId != null and !knowledgeId.isEmpty()">
+                #{knowledgeId, typeHandler=com.tiankong.handler.JsonTypeHandler},
+            </if>
+            <if test="chose != null and !chose.isEmpty()">
+                #{chose, typeHandler=com.tiankong.handler.JsonTypeHandler},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateById">
+        UPDATE question
+        <set>
+            <!-- 基础信息 -->
+            <if test="courseId != null">
+                course_id = #{courseId},
+            </if>
+            <if test="chapterId != null">
+                chapter_id = #{chapterId},
+            </if>
+            <if test="paragraphId != null">
+                paragraph_id = #{paragraphId},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="difficult != null">
+                difficult = #{difficult},
+            </if>
+
+            <!-- 内容相关 -->
+            <if test="content != null and content != ''">
+                content = #{content},
+            </if>
+            <if test="analysis != null and analysis != ''">
+                analysis = #{analysis},
+            </if>
+
+            <!-- JSON字段处理 -->
+            <if test="answer != null and !answer.isEmpty()">
+                answer = #{answer, typeHandler=com.tiankong.handler.JsonTypeHandler},
+            </if>
+            <if test="knowledgeId != null and !knowledgeId.isEmpty()">
+                knowledge_id = #{knowledgeId, typeHandler=com.tiankong.handler.JsonTypeHandler},
+            </if>
+            <if test="chose != null and !chose.isEmpty()">
+                chose = #{chose, typeHandler=com.tiankong.handler.JsonTypeHandler},
+            </if>
+
+            <!-- 自动更新时间 -->
+            updated_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        delete from question
+        where id = #{id}
+    </delete>
+
+    <select id="list" resultType="com.tiankong.pojo.Question">
+        SELECT * FROM question
+        <where>
+            <!-- 精确匹配条件 -->
+            <if test="id != null">
+                AND id = #{id}
+            </if>
+            <if test="courseId != null">
+                AND course_id = #{courseId}
+            </if>
+            <if test="chapterId != null">
+                AND chapter_id = #{chapterId}
+            </if>
+            <if test="paragraphId != null">
+                AND paragraph_id = #{paragraphId}
+            </if>
+
+            <!-- JSON数组查询（根据实际存储结构调整） -->
+            <if test="knowledgeId != null">
+                AND JSON_CONTAINS(knowledge_id, CAST(#{knowledgeId} AS JSON))
+            </if>
+
+            <!-- 枚举类型查询 -->
+            <if test="type != null">
+                AND type = #{type}
+            </if>
+        </where>
+        ORDER BY id DESC
+    </select>
+
+    <select id="getQusetionById" resultType="com.tiankong.pojo.Question">
+        SELECT * FROM question
+        WHERE id = #{id}
+    </select>
+
+</mapper>
