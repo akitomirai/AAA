@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.tiankong.mapeer.UserMapper">
+
+    <!-- 定义结果映射（解决字段名与属性名的映射） -->
+    <resultMap id="userResultMap" type="com.tiankong.pojo.User">
+        <id column="id" property="id"/> <!-- 主键映射 -->
+        <result column="user_account" property="userAccount"/> <!-- 下划线转驼峰 -->
+        <result column="user_name" property="userName"/>
+        <result column="user_password" property="userPassword"/>
+        <result column="user_avatar" property="userAvatar"/>
+        <result column="gender" property="gender"/>
+        <result column="role_id" property="roleId"/>
+        <result column="organize_id" property="organizeId"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="is_delete" property="isDelete"/>
+        <result column="role_name" property="userRole"/> <!-- 关联查询的角色名称 -->
+    </resultMap>
+
+    <select id="selectByAccount" resultMap="userResultMap">
+        SELECT
+        u.*,
+        r.role_name  <!-- 关联角色表获取角色名称 -->
+        FROM `user` u
+        LEFT JOIN `role` r ON u.role_id = r.id
+        WHERE u.user_account = #{userAccount}
+        AND u.is_delete = 0  <!-- 排除已删除用户 -->
+    </select>
+
+</mapper>
